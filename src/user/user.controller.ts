@@ -1,6 +1,5 @@
-import { Controller, Get, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, UseGuards } from '@nestjs/common';
 import { User } from '@prisma/client';
-import { Request } from 'express';
 import { isAnyoneGuard } from 'src/auth/guards';
 import { GetEntity } from '../auth/decorators';
 
