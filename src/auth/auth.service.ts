@@ -3,14 +3,20 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { User, Bookmark } from '@prisma/client';
 import { hash, verify } from 'argon2';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateUserData, UserSignInData } from './dto';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private jwt: JwtService,
+    private config: ConfigService,
+  ) {}
   async signup(data: CreateUserData) {
     try {
       const exists = await this.prisma.user.findFirst({
@@ -30,7 +36,8 @@ export class AuthService {
         },
       });
       delete user.hash;
-      return user;
+      const token = await this.signToken(user.id, user.email);
+      return { ...user, token };
     } catch (error) {
       throw error;
     }
@@ -47,8 +54,23 @@ export class AuthService {
     }
     if (await verify(user.hash, data.password)) {
       delete user.hash;
+      const token = await this.signToken(user.id, user.email);
+      return { ...user, token };
       return user;
     }
     throw new UnauthorizedException('Credentials do not match our records');
+  }
+
+  signToken(id: string | number, email: string): Promise<string> {
+    const secret = this.config.get('JWT_SECRET');
+    const payload = {
+      sub: id,
+      email,
+    };
+    console.log({ secret });
+    return this.jwt.signAsync(payload, {
+      expiresIn: '1d',
+      secret,
+    });
   }
 }
