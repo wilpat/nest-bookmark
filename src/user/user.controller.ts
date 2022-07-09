@@ -1,14 +1,16 @@
 import { Controller, Get, Req, UseGuards } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
+import { User } from '@prisma/client';
 import { Request } from 'express';
+import { isAnyoneGuard } from 'src/auth/guards';
+import { GetEntity } from '../auth/decorators';
 
 @Controller('users')
 export class UserController {
   // constructor() {}
 
-  @UseGuards(AuthGuard('isAnyone'))
+  @UseGuards(isAnyoneGuard)
   @Get('me')
-  getMe(@Req() req: Request) {
-    return req.user;
+  getMe(@GetEntity() user: User) {
+    return user;
   }
 }
