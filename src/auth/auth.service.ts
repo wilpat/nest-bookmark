@@ -9,6 +9,7 @@ import { hash, verify } from 'argon2';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateUserData, UserSignInData } from './dto';
 import { ConfigService } from '@nestjs/config';
+import { UserService } from '../user/user.service';
 
 @Injectable()
 export class AuthService {
@@ -16,6 +17,7 @@ export class AuthService {
     private prisma: PrismaService,
     private jwt: JwtService,
     private config: ConfigService,
+    private userService: UserService,
   ) {}
   async signup(data: CreateUserData) {
     try {
@@ -32,12 +34,19 @@ export class AuthService {
       const user = await this.prisma.user.create({
         data: {
           ...data,
+          type: 'user',
+          entity: 'user',
           hash: passwordHash,
         },
       });
       delete user.hash;
-      const token = await this.signToken(user.id, user.email);
-      return { ...user, token };
+      const access_token = await this.signToken(
+        user.id,
+        user.email,
+        user.type,
+        user.entity,
+      );
+      return { ...user, access_token };
     } catch (error) {
       throw error;
     }
@@ -54,23 +63,41 @@ export class AuthService {
     }
     if (await verify(user.hash, data.password)) {
       delete user.hash;
-      const token = await this.signToken(user.id, user.email);
-      return { ...user, token };
-      return user;
+      const access_token = await this.signToken(
+        user.id,
+        user.email,
+        user.type,
+        user.entity,
+      );
+      return { ...user, access_token };
     }
     throw new UnauthorizedException('Credentials do not match our records');
   }
 
-  signToken(id: string | number, email: string): Promise<string> {
+  signToken(
+    id: string | number,
+    email: string,
+    type: string,
+    entity: string,
+  ): Promise<string> {
     const secret = this.config.get('JWT_SECRET');
     const payload = {
       sub: id,
       email,
+      type,
+      entity,
     };
-    console.log({ secret });
     return this.jwt.signAsync(payload, {
       expiresIn: '1d',
       secret,
     });
   }
+
+  getEntityByEmailAndType = async (email: string, type: string) =>
+    ((
+      {
+        user: () => this.userService.getUserByEmail(email),
+      }[type] ||
+      (() => Promise.reject(new UnauthorizedException('Unauthorized')))
+    )());
 }
