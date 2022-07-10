@@ -4,10 +4,10 @@ export class UpdateUserData {
   @IsOptional()
   @IsString()
   @IsNotEmpty()
-  firstName: string;
+  firstName?: string;
 
   @IsOptional()
   @IsString()
   @IsNotEmpty()
-  lastName: string;
+  lastName?: string;
 }

@@ -13,13 +13,13 @@ export class UserService {
       },
     });
   update = async (
-    user: User,
+    email: string,
     data: UpdateUserData,
     { repo = this.prisma.user, sanitizeEntity = (props) => null } = {},
   ) => {
     const updatedUser = await repo.update({
       where: {
-        email: user.email,
+        email,
       },
       data,
     });

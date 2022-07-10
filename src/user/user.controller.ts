@@ -27,8 +27,8 @@ export class UserController {
   @HttpCode(HttpStatus.OK)
   @UseGuards(isAnyoneGuard)
   @Patch('')
-  updateUser(@Body() body: UpdateUserData, @GetEntity() user: User) {
-    return this.userService.update(user, body, {
+  updateUser(@Body() body: UpdateUserData, @GetEntity('email') email: string) {
+    return this.userService.update(email, body, {
       sanitizeEntity: this.utils.sanitizeEntity,
     });
   }

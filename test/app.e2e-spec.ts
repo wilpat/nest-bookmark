@@ -126,5 +126,18 @@ describe('App e2e', () => {
           .expectStatus(200);
       });
     });
+    describe('Update user', () => {
+      it('should get update the current user', () => {
+        return pactum
+          .spec()
+          .patch('users')
+          .withHeaders({
+            Authorization: 'Bearer $S{accessToken}',
+          })
+          .withBody({ firstName: 'New Name' })
+          .expectStatus(200)
+          .expectBodyContains('New Name');
+      });
+    });
   });
 });
