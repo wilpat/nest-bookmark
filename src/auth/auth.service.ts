@@ -1,4 +1,5 @@
 import {
+  ConflictException,
   ForbiddenException,
   Injectable,
   UnauthorizedException,
@@ -19,19 +20,19 @@ export class AuthService {
     private config: ConfigService,
     private userService: UserService,
   ) {}
-  async signup(data: CreateUserData) {
+  async signup(data: CreateUserData, { repo = this.prisma.user } = {}) {
     try {
-      const exists = await this.prisma.user.findFirst({
+      const exists = await repo.findFirst({
         where: {
           email: data.email,
         },
       });
       if (exists) {
-        throw new ForbiddenException('Credentials Taken');
+        throw new ConflictException('Credentials Taken');
       }
       const passwordHash = await hash(data.password);
       delete data.password;
-      const user = await this.prisma.user.create({
+      const user = await repo.create({
         data: {
           ...data,
           type: 'user',
@@ -52,8 +53,8 @@ export class AuthService {
     }
   }
 
-  async signin(data: UserSignInData) {
-    const user = await this.prisma.user.findFirst({
+  async signin(data: UserSignInData, { repo = this.prisma.user } = {}) {
+    const user = await repo.findFirst({
       where: {
         email: data.email,
       },

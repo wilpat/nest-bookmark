@@ -22,6 +22,7 @@ describe('App e2e', () => {
     await app.listen('3334');
 
     prisma = app.get(PrismaService);
+    pactum.request.setBaseUrl('http://localhost:3334/');
     await prisma.cleanDb();
   });
 
@@ -30,32 +31,98 @@ describe('App e2e', () => {
   });
 
   describe('Auth', () => {
+    const userData: CreateUserData = {
+      email: 'test@gmail.com',
+      password: '123',
+      firstName: 'first',
+      lastName: 'first',
+    };
     describe('Signup', () => {
-      it('Should sign up', () => {
-        const userData: CreateUserData = {
-          email: 'test@gmail.com',
-          password: '123',
-          firstName: 'first',
-          lastName: 'first',
-        };
+      it('Should should throw if email is empty', () => {
         return pactum
           .spec()
-          .post('http://localhost:3334/auth/signup')
+          .post('auth/signup')
+          .withBody({ ...userData, email: '' })
+          .expectStatus(400);
+      });
+
+      it('Should should throw if password is empty', () => {
+        return pactum
+          .spec()
+          .post('auth/signup')
+          .withBody({ ...userData, password: '' })
+          .expectStatus(400);
+      });
+
+      it('Should should throw if body is empty', () => {
+        return pactum.spec().post('auth/signup').expectStatus(400);
+      });
+
+      it('Should sign up', () => {
+        return pactum
+          .spec()
+          .post('auth/signup')
           .withBody(userData)
           .expectStatus(201);
+      });
+
+      it('Should throw if email is taken', () => {
+        return pactum
+          .spec()
+          .post('auth/signup')
+          .withBody(userData)
+          .expectStatus(409);
       });
     });
 
     describe('Signin', () => {
-      it('Should sign in', () => {
-        const userData: UserSignInData = {
-          email: 'test@gmail.com',
-          password: '123',
-        };
+      const userData: UserSignInData = {
+        email: 'test@gmail.com',
+        password: '123',
+      };
+      it('Should throw if password is emtpty', () => {
         return pactum
           .spec()
-          .post('http://localhost:3334/auth/signin')
+          .post('auth/signin')
+          .withBody({ ...userData, password: '' })
+          .expectStatus(400);
+      });
+      it('Should throw if email is empty', () => {
+        return pactum
+          .spec()
+          .post('auth/signin')
+          .withBody({ ...userData, email: '' })
+          .expectStatus(400);
+      });
+
+      it('Should fail to sign in', () => {
+        return pactum
+          .spec()
+          .post('auth/signin')
+          .withBody({ ...userData, password: '22' })
+          .expectStatus(401);
+      });
+
+      it('Should sign in', () => {
+        return pactum
+          .spec()
+          .post('auth/signin')
           .withBody(userData)
+          .expectStatus(200)
+          .stores('accessToken', 'access_token');
+      });
+    });
+  });
+
+  describe('User', () => {
+    describe('Get me', () => {
+      it('should get current user', () => {
+        return pactum
+          .spec()
+          .get('users/me')
+          .withHeaders({
+            Authorization: 'Bearer $S{accessToken}',
+          })
           .expectStatus(200);
       });
     });
