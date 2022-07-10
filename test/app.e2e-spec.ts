@@ -3,11 +3,17 @@ import { Test } from '@nestjs/testing';
 import { AppModule } from '../src/app.module';
 import * as pactum from 'pactum';
 import { PrismaService } from '../src/prisma/prisma.service';
+import { AuthService } from '../src/auth/auth.service';
 import { CreateUserData, UserSignInData } from '../src/auth/validations';
-
+import { CreateBookmarkData } from '../src/bookmark/validations/index';
 describe('App e2e', () => {
   let app: INestApplication;
   let prisma: PrismaService;
+  let auth: AuthService;
+  // beforeEach(async () => {
+  //   await prisma.cleanDb();
+  // });
+
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [AppModule],
@@ -22,27 +28,28 @@ describe('App e2e', () => {
     await app.listen('3334');
 
     prisma = app.get(PrismaService);
+    // auth = app.get(AuthService);
+    // console.log({ auth: auth.signup });
     pactum.request.setBaseUrl('http://localhost:3334/');
-    await prisma.cleanDb();
   });
 
-  afterAll(() => {
+  afterAll(async () => {
+    await prisma.cleanDb();
     app.close();
   });
-
+  const createUserData: CreateUserData = {
+    email: 'test@gmail.com',
+    password: '123',
+    firstName: 'first',
+    lastName: 'first',
+  };
   describe('Auth', () => {
-    const userData: CreateUserData = {
-      email: 'test@gmail.com',
-      password: '123',
-      firstName: 'first',
-      lastName: 'first',
-    };
     describe('Signup', () => {
       it('Should should throw if email is empty', () => {
         return pactum
           .spec()
           .post('auth/signup')
-          .withBody({ ...userData, email: '' })
+          .withBody({ ...createUserData, email: '' })
           .expectStatus(400);
       });
 
@@ -50,7 +57,7 @@ describe('App e2e', () => {
         return pactum
           .spec()
           .post('auth/signup')
-          .withBody({ ...userData, password: '' })
+          .withBody({ ...createUserData, password: '' })
           .expectStatus(400);
       });
 
@@ -62,7 +69,7 @@ describe('App e2e', () => {
         return pactum
           .spec()
           .post('auth/signup')
-          .withBody(userData)
+          .withBody(createUserData)
           .expectStatus(201);
       });
 
@@ -70,7 +77,7 @@ describe('App e2e', () => {
         return pactum
           .spec()
           .post('auth/signup')
-          .withBody(userData)
+          .withBody(createUserData)
           .expectStatus(409);
       });
     });
@@ -80,7 +87,7 @@ describe('App e2e', () => {
         email: 'test@gmail.com',
         password: '123',
       };
-      it('Should throw if password is emtpty', () => {
+      it('Should throw if password is empty', () => {
         return pactum
           .spec()
           .post('auth/signin')
@@ -94,15 +101,15 @@ describe('App e2e', () => {
           .withBody({ ...userData, email: '' })
           .expectStatus(400);
       });
-
-      it('Should fail to sign in', () => {
+      it('Should fail to sign in with incorrect credentials', () => {
         return pactum
           .spec()
           .post('auth/signin')
           .withBody({ ...userData, password: '22' })
           .expectStatus(401);
       });
-
+      console.log('Runnernmksdfsndfsd');
+      // auth.signup(createUserData);
       it('Should sign in', () => {
         return pactum
           .spec()
@@ -138,6 +145,24 @@ describe('App e2e', () => {
           .expectStatus(200)
           .expectBodyContains('New Name');
       });
+    });
+  });
+  describe('Bookmark', () => {
+    const bookmarkData: CreateBookmarkData = {
+      title: 'sample title',
+      description: 'sample description',
+      link: 'google.com',
+    };
+    it('should create a bookmark', () => {
+      return pactum
+        .spec()
+        .post('bookmarks')
+        .withHeaders({
+          Authorization: 'Bearer $S{accessToken}',
+        })
+        .withBody(bookmarkData)
+        .expectStatus(201)
+        .expectBodyContains('sample title');
     });
   });
 });

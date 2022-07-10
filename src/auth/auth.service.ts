@@ -5,7 +5,6 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { User, Bookmark } from '@prisma/client';
 import { hash, verify } from 'argon2';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserData, UserSignInData } from './validations';

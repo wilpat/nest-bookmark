@@ -7,7 +7,7 @@ import {
   UseGuards,
   Body,
 } from '@nestjs/common';
-import { GetEntity } from 'src/auth/decorators';
+import { GetEntity } from '../auth/decorators';
 import { isAnyoneGuard } from '../auth/guards/is-anyone.guard';
 import { BookmarkService } from './bookmark.service';
 import { CreateBookmarkData } from './validations/index';
