@@ -6,11 +6,13 @@ import {
   Delete,
   UseGuards,
   Body,
+  Param,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { GetEntity } from '../auth/decorators';
 import { isAnyoneGuard } from '../auth/guards/is-anyone.guard';
 import { BookmarkService } from './bookmark.service';
-import { CreateBookmarkData } from './validations/index';
+import { CreateBookmarkData, EditBookmarkData } from './validations/index';
 
 @Controller('bookmarks')
 export class BookmarkController {
@@ -26,27 +28,38 @@ export class BookmarkController {
 
   @UseGuards(isAnyoneGuard)
   @Get('user')
-  getUserBookmarks(@GetEntity('id') userId: number | string) {
-    return 'user bookmarks';
-  }
-
-  @Get('')
-  getBookmarks() {
-    return 'all bookmarks';
+  getUserBookmarks(@GetEntity('id') userId: number) {
+    return this.bookmarkService.getUserBookmarks(userId);
   }
 
   @Get('/:bookmarkId')
-  getBookmarkById() {
-    return 'single bookmarks';
+  getBookmarkById(
+    @GetEntity('id') userId: number,
+    @Param('bookmarkId', ParseIntPipe) bookmarkId: number,
+  ) {
+    const bookmark = this.bookmarkService.getBookmarkById(userId, bookmarkId);
+    console.log({ bookmark });
+    return bookmark;
   }
 
   @Patch('/:bookmarkId')
-  updateBookmarkById() {
-    return 'update bookmark';
+  async updateBookmarkById(
+    @GetEntity('id') userId: number,
+    @Body() bookmark: EditBookmarkData,
+    @Param('bookmarkId', ParseIntPipe) bookmarkId: number,
+  ) {
+    return this.bookmarkService.updateBookmarkById(
+      userId,
+      bookmarkId,
+      bookmark,
+    );
   }
 
   @Delete('/:bookmarkId')
-  deleteBookmarkById() {
-    return 'delete bookmark';
+  deleteBookmarkById(
+    @GetEntity('id') userId: number,
+    @Param('bookmarkId', ParseIntPipe) bookmarkId: number,
+  ) {
+    return this.bookmarkService.deleteBookmarkById(userId, bookmarkId);
   }
 }
