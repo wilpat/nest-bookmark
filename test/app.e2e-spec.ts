@@ -214,8 +214,7 @@ describe('App e2e', () => {
         })
         .delete('bookmarks/{id}')
         .withPathParams('id', '$S{bookmarkId}')
-        .expectStatus(200)
-        .expectBodyContains('Deleted');
+        .expectStatus(204);
     });
   });
 });

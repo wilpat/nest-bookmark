@@ -8,6 +8,8 @@ import {
   Body,
   Param,
   ParseIntPipe,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { GetEntity } from '../auth/decorators';
 import { isAnyoneGuard } from '../auth/guards/is-anyone.guard';
@@ -55,6 +57,7 @@ export class BookmarkController {
     );
   }
 
+  @HttpCode(HttpStatus.NO_CONTENT)
   @Delete('/:bookmarkId')
   deleteBookmarkById(
     @GetEntity('id') userId: number,
