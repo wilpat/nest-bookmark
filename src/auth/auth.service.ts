@@ -8,7 +8,7 @@ import { JwtService } from '@nestjs/jwt';
 import { User, Bookmark } from '@prisma/client';
 import { hash, verify } from 'argon2';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateUserData, UserSignInData } from './dto';
+import { CreateUserData, UserSignInData } from './validations';
 import { ConfigService } from '@nestjs/config';
 import { UserService } from '../user/user.service';
 

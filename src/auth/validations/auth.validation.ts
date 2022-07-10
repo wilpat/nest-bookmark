@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
 
 export class CreateUserData {
   @IsEmail()
@@ -26,16 +26,4 @@ export class UserSignInData {
   @IsString()
   @IsNotEmpty()
   password: string;
-}
-
-export class UpdateUserData {
-  @IsOptional()
-  @IsString()
-  @IsNotEmpty()
-  firstName: string;
-
-  @IsOptional()
-  @IsString()
-  @IsNotEmpty()
-  lastName: string;
 }

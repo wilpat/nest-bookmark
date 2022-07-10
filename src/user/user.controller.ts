@@ -11,7 +11,7 @@ import { User } from '@prisma/client';
 import { isAnyoneGuard } from '../auth/guards';
 import { GetEntity } from '../auth/decorators';
 import { UserService } from './user.service';
-import { UpdateUserData } from '../auth/dto/auth.dto';
+import { UpdateUserData } from './validations/index';
 import { UtilsService } from '../utils/utils.service';
 
 @Controller('users')

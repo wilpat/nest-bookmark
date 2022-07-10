@@ -3,7 +3,7 @@ import { Test } from '@nestjs/testing';
 import { AppModule } from '../src/app.module';
 import * as pactum from 'pactum';
 import { PrismaService } from '../src/prisma/prisma.service';
-import { CreateUserData, UserSignInData } from '../src/auth/dto/auth.dto';
+import { CreateUserData, UserSignInData } from '../src/auth/validations';
 
 describe('App e2e', () => {
   let app: INestApplication;
